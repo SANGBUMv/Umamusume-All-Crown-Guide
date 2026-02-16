@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>우마무스메 전관작 가이드 SANGBUM edition </title>
+    <style>
+        :root { 
+            --uma-green: #82C91E; 
+            --g1: #4A90E2; --g2: #FF8E9E; --g3: #8DE1A6; 
+            --info-bg: #FFFDE7; --undone-bg: #FFF9C4; --done-bg: #ECEFF1;
+            --danger: #FF5252; --gold: #FFD700;
+            --field-turf: #88d05b; --field-dirt: #CC9966;
+            --dist-1: #F29199; --dist-2: #FFD285; --dist-3: #95C7DB; --dist-4: #A29BFE;
+        }
+        body { font-family: sans-serif; background: #e2e8f0; display: flex; justify-content: center; margin: 0; }
+        .phone-screen { width: 100%; max-width: 400px; height: 100vh; background: #f7f9fa; display: flex; flex-direction: column; overflow: hidden; position: relative; }
+        .stats-banner { background: var(--uma-green); color: white; padding: 10px; text-align: center; font-weight: bold; font-size: 1rem; border-bottom: 1px solid rgba(255,255,255,0.2); }
+        .year-tabs { display: flex; background: var(--uma-green); padding: 4px; gap: 4px; flex-shrink: 0; }
+        .year-tab { flex: 1; padding: 8px; text-align: center; color: white; cursor: pointer; border-radius: 8px; font-weight: bold; opacity: 0.7; font-size: 0.8rem; }
+        .year-tab.active { opacity: 1; background: rgba(255,255,255,0.2); }
+        .content-area { flex: 1; overflow-y: auto; padding: 10px; padding-bottom: 80px; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+
+        .turn-divider { background: #E9ECEF; padding: 4px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: bold; color: #666; margin: 12px 0 6px 0; display: inline-block; width: fit-content; }
+        .race-card { background: white; border-radius: 12px; padding: 12px; margin-bottom: 8px; display: flex; align-items: center; border: 1px solid #ddd; cursor: pointer; }
+        .race-card.completed { background-color: #f0f0f0; filter: grayscale(1); opacity: 0.5; }
+        .grade-badge { width: 35px; height: 35px; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; margin-right: 12px; flex-shrink: 0; font-size: 0.7rem; }
+        .G1 { background: var(--g1); } .G2 { background: var(--g2); } .G3 { background: var(--g3); }
+        .info { flex: 1; display: flex; flex-direction: column; }
+        .name { font-weight: bold; font-size: 0.85rem; margin-bottom: 4px; color: #333; line-height: 1.2; }
+        .stadium-detail { font-size: 0.7rem; color: #888; }
+        .highlight-group { display: flex; gap: 4px; margin-left: 8px; }
+        .highlight-box { background: var(--info-bg); border: 1px solid #F0E68C; border-radius: 4px; padding: 4px 6px; font-size: 0.65rem; font-weight: bold; color: #555; white-space: nowrap; }
+
+        .status-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; padding: 10px 0; }
+        .status-item { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+        .status-box { width: 100%; height: 40px; border-radius: 6px; border: 1px solid #ddd; display: flex; align-items: center; justify-content: center; font-size: 0.7rem; font-weight: bold; }
+        .status-box.undone { background: var(--undone-bg); color: #FBC02D; border-color: #FFF176; }
+        .status-box.done { background: var(--done-bg); color: #90A4AE; border-color: #CFD8DC; }
+        .status-box.none { background: white; color: #ccc; }
+        .status-label { font-size: 0.65rem; color: #444; font-weight: bold; text-align: center; }
+
+        .progress-card { background: white; border-radius: 12px; padding: 15px; margin-bottom: 10px; border: 1px solid #eee; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+        .progress-item { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; font-size: 0.9rem; font-weight: bold; }
+        .field-tag { padding: 2px 6px; border-radius: 4px; color: white; margin-right: 4px; }
+        .dist-tag { padding: 2px 6px; border-radius: 4px; color: white; }
+        .remain-count { color: var(--danger); font-size: 1.1rem; }
+
+        .trophy-section-title { font-size: 0.9rem; font-weight: bold; color: #444; margin: 20px 0 10px 5px; border-left: 4px solid var(--uma-green); padding-left: 8px; }
+        .trophy-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; padding: 10px; margin-bottom: 10px; background: white; border-radius: 15px; border: 1px solid #eee; }
+        .trophy-item { display: flex; flex-direction: column; align-items: center; cursor: pointer; padding: 5px 0; }
+        .trophy-page-divider { grid-column: span 3; border-top: 2px solid #ddd; margin: 10px 0; }
+        .trophy-icon { width: 50px; height: 60px; background: #eee; clip-path: polygon(20% 0%, 80% 0%, 100% 20%, 100% 50%, 80% 100%, 20% 100%, 0% 50%, 0% 20%); display: flex; align-items: center; justify-content: center; position: relative; transition: 0.2s; }
+        .trophy-icon::after { content: '🏆'; font-size: 20px; opacity: 0.1; }
+        .trophy-item.active .trophy-icon { background: var(--gold); box-shadow: 0 0 10px rgba(255,215,0,0.5); }
+        .trophy-item.active .trophy-icon::after { opacity: 1; }
+        .trophy-name { font-size: 0.6rem; color: #888; text-align: center; margin-top: 5px; line-height: 1.2; height: 2.4em; overflow: hidden; }
+
+        .main-tab-bar { background: white; border-top: 1px solid #ddd; display: flex; height: 60px; flex-shrink: 0; position: absolute; bottom: 0; width: 100%; }
+        .main-tab-item { flex: 1; display: flex; align-items: center; justify-content: center; cursor: pointer; color: #888; font-size: 0.7rem; text-align: center; font-weight: bold; border-right: 1px solid #f0f0f0; }
+        .main-tab-item.active { color: var(--uma-green); background-color: #fcfdfa; }
+
+        .reset-btn { background: none; color: var(--danger); border: 1px solid var(--danger); padding: 10px 20px; border-radius: 10px; font-size: 0.8rem; font-weight: bold; margin: 30px auto; cursor: pointer; display: block; }
+    </style>
+</head>
+<body>
+
+<div class="phone-screen">
+    <div class="stats-banner">전관 달성률 <span id="totalPercent">0</span>% (<span id="doneCount">0</span>/<span id="totalCount">0</span>)</div>
+    
+    <div id="yearTabHeader" class="year-tabs">
+        <div class="year-tab active" onclick="setYear(0)">주니어</div>
+        <div class="year-tab" onclick="setYear(1)">클래식</div>
+        <div class="year-tab" onclick="setYear(2)">시니어</div>
+    </div>
+
+    <div class="content-area">
+        <div id="tabList" class="tab-content active"><div id="raceContainer"></div></div>
+        <div id="tabStatus" class="tab-content"><div id="statusGridContainer" class="status-grid"></div></div>
+        <div id="tabTrophy" class="tab-content">
+            <div class="trophy-section-title">GI 레이스</div><div id="g1Grid" class="trophy-grid"></div>
+            <div class="trophy-section-title">GII 레이스</div><div id="g2Grid" class="trophy-grid"></div>
+            <div class="trophy-section-title">GIII 레이스</div><div id="g3Grid" class="trophy-grid"></div>
+        </div>
+        <div id="tabProgress" class="tab-content">
+            <div class="progress-card" id="progressContainer">
+                </div>
+            <button class="reset-btn" onclick="resetAllData()">기록 전체 초기화</button>
+        </div>
+    </div>
+
+    <div class="main-tab-bar">
+        <div id="menuList" class="main-tab-item active" onclick="switchMenu('list')">레이스<br>리스트</div>
+        <div id="menuStatus" class="main-tab-item" onclick="switchMenu('status')">로테이션</div>
+        <div id="menuTrophy" class="main-tab-item" onclick="switchMenu('trophy')">트로피 룸</div>
+        <div id="menuProgress" class="main-tab-item" onclick="switchMenu('progress')">진행률</div>
+    </div>
+</div>
+
+<script>
+    const turns = ["1월 전반", "1월 후반", "2월 전반", "2월 후반", "3월 전반", "3월 후반", "4월 전반", "4월 후반", "5월 전반", "5월 후반", "6월 전반", "6월 후반", "7월 전반", "7월 후반", "8월 전반", "8월 후반", "9월 전반", "9월 후반", "10월 전반", "10월 후반", "11월 전반", "11월 후반", "12월 전반", "12월 후반"];
+    const allRaces = [ { year: 2, turn: "2월 후반", nameKo: "페브러리 스테이크스", nameShort: "페브러리 S", grade: "G1", field: "더트", distType: "마일", stadium: "도쿄", distM: "1600m", dir: "좌" },
+{ year: 2, turn: "3월 후반", nameKo: "타카마츠노미야 기념", nameShort: "타카마츠노미야 기념", grade: "G1", field: "잔디", distType: "단거리", stadium: "츄쿄", distM: "1200m", dir: "좌" },
+{ year: 2, turn: "3월 후반", nameKo: "오사카배", nameShort: "오사카배", grade: "G1", field: "잔디", distType: "중거리", stadium: "한신", distM: "2000m", dir: "우(내주로)" },
+{ year: 1, turn: "4월 전반", nameKo: "벚꽃상", nameShort: "벚꽃상", grade: "G1", field: "잔디", distType: "마일", stadium: "한신", distM: "1600m", dir: "우(외주로)" },
+{ year: 1, turn: "4월 전반", nameKo: "사츠키상", nameShort: "사츠키상", grade: "G1", field: "잔디", distType: "중거리", stadium: "나카야마", distM: "2000m", dir: "우(내주로)" },
+{ year: 2, turn: "4월 후반", nameKo: "텐노상(봄)", nameShort: "텐노상(봄)", grade: "G1", field: "잔디", distType: "장거리", stadium: "교토", distM: "3200m", dir: "우(외주로)" },
+{ year: 1, turn: "5월 전반", nameKo: "NHK 마일컵", nameShort: "NHK 마일컵", grade: "G1", field: "잔디", distType: "마일", stadium: "도쿄", distM: "1600m", dir: "좌" },
+{ year: 2, turn: "5월 전반", nameKo: "빅토리아 마일", nameShort: "빅토리아 M", grade: "G1", field: "잔디", distType: "마일", stadium: "도쿄", distM: "1600m", dir: "좌" },
+{ year: 1, turn: "5월 후반", nameKo: "오크스", nameShort: "오크스", grade: "G1", field: "잔디", distType: "중거리", stadium: "도쿄", distM: "2400m", dir: "좌" },
+{ year: 1, turn: "5월 후반", nameKo: "일본 더비 (도쿄 우준)", nameShort: "일본 더비", grade: "G1", field: "잔디", distType: "중거리", stadium: "도쿄", distM: "2400m", dir: "좌" },
+{ year: 1, turn: "6월 전반", nameKo: "야스다 기념", nameShort: "야스다 기념", grade: "G1", field: "잔디", distType: "마일", stadium: "도쿄", distM: "1600m", dir: "좌" },
+{ year: 2, turn: "6월 전반", nameKo: "야스다 기념", nameShort: "야스다 기념", grade: "G1", field: "잔디", distType: "마일", stadium: "도쿄", distM: "1600m", dir: "좌" },
+{ year: 1, turn: "6월 후반", nameKo: "타카라즈카 기념", nameShort: "타카라즈카 기념", grade: "G1", field: "잔디", distType: "중거리", stadium: "한신", distM: "2200m", dir: "우(내주로)" },
+{ year: 2, turn: "6월 후반", nameKo: "타카라즈카 기념", nameShort: "타카라즈카 기념", grade: "G1", field: "잔디", distType: "중거리", stadium: "한신", distM: "2200m", dir: "우(내주로)" },
+{ year: 1, turn: "9월 후반", nameKo: "스프린터스 스테이크스", nameShort: "스프린터스 S", grade: "G1", field: "잔디", distType: "단거리", stadium: "나카야마", distM: "1200m", dir: "우(외주로)" },
+{ year: 2, turn: "9월 후반", nameKo: "스프린터스 스테이크스", nameShort: "스프린터스 S", grade: "G1", field: "잔디", distType: "단거리", stadium: "나카야마", distM: "1200m", dir: "우(외주로)" },
+{ year: 1, turn: "10월 후반", nameKo: "추화상", nameShort: "추화상", grade: "G1", field: "잔디", distType: "중거리", stadium: "교토", distM: "2000m", dir: "우(내주로)" },
+{ year: 1, turn: "10월 후반", nameKo: "국화상", nameShort: "국화상", grade: "G1", field: "잔디", distType: "장거리", stadium: "교토", distM: "3000m", dir: "우(외주로)" },
+{ year: 1, turn: "10월 후반", nameKo: "텐노상(가을)", nameShort: "텐노상(가을)", grade: "G1", field: "잔디", distType: "중거리", stadium: "도쿄", distM: "2000m", dir: "좌" },
+{ year: 2, turn: "10월 후반", nameKo: "텐노상(가을)", nameShort: "텐노상(가을)", grade: "G1", field: "잔디", distType: "중거리", stadium: "도쿄", distM: "2000m", dir: "좌" },
+{ year: 1, turn: "11월 전반", nameKo: "엘리자베스 여왕배", nameShort: "엘리자베스 여왕배", grade: "G1", field: "잔디", distType: "중거리", stadium: "교토", distM: "2200m", dir: "우(외주로)" },
+{ year: 2, turn: "11월 전반", nameKo: "엘리자베스 여왕배", nameShort: "엘리자베스 여왕배", grade: "G1", field: "잔디", distType: "중거리", stadium: "교토", distM: "2200m", dir: "우(외주로)" },
+{ year: 1, turn: "11월 후반", nameKo: "마일 챔피언십", nameShort: "마일CS", grade: "G1", field: "잔디", distType: "마일", stadium: "교토", distM: "1600m", dir: "우(외주로)" },
+{ year: 2, turn: "11월 후반", nameKo: "마일 챔피언십", nameShort: "마일CS", grade: "G1", field: "잔디", distType: "마일", stadium: "교토", distM: "1600m", dir: "우(외주로)" },
+{ year: 1, turn: "11월 후반", nameKo: "재팬컵", nameShort: "재팬컵", grade: "G1", field: "잔디", distType: "중거리", stadium: "도쿄", distM: "2400m", dir: "좌" },
+{ year: 2, turn: "11월 후반", nameKo: "재팬컵", nameShort: "재팬컵", grade: "G1", field: "잔디", distType: "중거리", stadium: "도쿄", distM: "2400m", dir: "좌" },
+{ year: 1, turn: "12월 전반", nameKo: "챔피언스컵", nameShort: "챔피언스컵", grade: "G1", field: "더트", distType: "마일", stadium: "츄쿄", distM: "1800m", dir: "좌" },
+{ year: 2, turn: "12월 전반", nameKo: "챔피언스컵", nameShort: "챔피언스컵", grade: "G1", field: "더트", distType: "마일", stadium: "츄쿄", distM: "1800m", dir: "좌" },
+{ year: 0, turn: "12월 전반", nameKo: "한신 쥬버나일 필리스", nameShort: "한신 JF", grade: "G1", field: "잔디", distType: "마일", stadium: "한신", distM: "1600m", dir: "우(외주로)" },
+{ year: 0, turn: "12월 전반", nameKo: "아사히배 퓨처러티 스테이크스", nameShort: "아사히배 FS", grade: "G1", field: "잔디", distType: "마일", stadium: "한신", distM: "1600m", dir: "우(외주로)" },
+{ year: 1, turn: "12월 후반", nameKo: "아리마 기념", nameShort: "아리마 기념", grade: "G1", field: "잔디", distType: "장거리", stadium: "나카야마", distM: "2500m", dir: "우(내주로)" },
+{ year: 2, turn: "12월 후반", nameKo: "아리마 기념", nameShort: "아리마 기념", grade: "G1", field: "잔디", distType: "장거리", stadium: "나카야마", distM: "2500m", dir: "우(내주로)" },
+{ year: 0, turn: "12월 후반", nameKo: "호프풀 스테이크스", nameShort: "호프풀 S", grade: "G1", field: "잔디", distType: "중거리", stadium: "나카야마", distM: "2000m", dir: "우(내주로)" },
+{ year: 1, turn: "12월 후반", nameKo: "도쿄 대상전", nameShort: "도쿄 대상전", grade: "G1", field: "더트", distType: "중거리", stadium: "오이", distM: "2000m", dir: "우" },
+{ year: 2, turn: "12월 후반", nameKo: "도쿄 대상전", nameShort: "도쿄 대상전", grade: "G1", field: "더트", distType: "중거리", stadium: "오이", distM: "2000m", dir: "우" },
+{ year: 1, turn: "11월 전반", nameKo: "JBC 클래식", nameShort: "JBC 클래식", grade: "G1", field: "더트", distType: "중거리", stadium: "오이", distM: "2000m", dir: "우" },
+{ year: 2, turn: "11월 전반", nameKo: "JBC 클래식", nameShort: "JBC 클래식", grade: "G1", field: "더트", distType: "중거리", stadium: "오이", distM: "2000m", dir: "우" },
+{ year: 1, turn: "11월 전반", nameKo: "JBC 스프린트", nameShort: "JBC 스프린트", grade: "G1", field: "더트", distType: "단거리", stadium: "오이", distM: "1200m", dir: "우" },
+{ year: 2, turn: "11월 전반", nameKo: "JBC 스프린트", nameShort: "JBC 스프린트", grade: "G1", field: "더트", distType: "단거리", stadium: "오이", distM: "1200m", dir: "우" },
+{ year: 1, turn: "11월 전반", nameKo: "JBC 레이디스 클래식", nameShort: "JBC 레이디스 클래식", grade: "G1", field: "더트", distType: "마일", stadium: "오이", distM: "1800m", dir: "우" },
+{ year: 2, turn: "11월 전반", nameKo: "JBC 레이디스 클래식", nameShort: "JBC 레이디스 클래식", grade: "G1", field: "더트", distType: "마일", stadium: "오이", distM: "1800m", dir: "우" },
+{ year: 1, turn: "7월 전반", nameKo: "재팬 더트 더비", nameShort: "재팬 더트 더비", grade: "G1", field: "더트", distType: "중거리", stadium: "오이", distM: "2000m", dir: "우" },
+{ year: 2, turn: "6월 후반", nameKo: "제왕상", nameShort: "제왕상", grade: "G1", field: "더트", distType: "중거리", stadium: "오이", distM: "2000m", dir: "우" },
+{ year: 2, turn: "2월 전반", nameKo: "가와사키 기념", nameShort: "가와사키 기념", grade: "G1", field: "더트", distType: "중거리", stadium: "가와사키", distM: "2100m", dir: "좌" },
+{ year: 0, turn: "12월 후반", nameKo: "전 일본 주니어 우준", nameShort: "전 일본 주니어 우준", grade: "G1", field: "더트", distType: "마일", stadium: "가와사키", distM: "1600m", dir: "좌" },
+{ year: 2, turn: "5월 전반", nameKo: "카시와 기념", nameShort: "카시와 기념", grade: "G1", field: "더트", distType: "마일", stadium: "후나바시", distM: "1600m", dir: "좌" },
+{ year: 1, turn: "10월 전반", nameKo: "마일 챔피언십 남부배", nameShort: "마일 CS 남부배", grade: "G1", field: "더트", distType: "마일", stadium: "모리오카", distM: "1600m", dir: "좌" },
+{ year: 2, turn: "10월 전반", nameKo: "마일 챔피언십 남부배", nameShort: "마일 CS 남부배", grade: "G1", field: "더트", distType: "마일", stadium: "모리오카", distM: "1600m", dir: "좌" },
+{ year: 1, turn: "10월 전반", nameKo: "개선문상", nameShort: "개선문상", grade: "G1", field: "잔디", distType: "중거리", stadium: "롱샹", distM: "2400m", dir: "우" },
+{ year: 2, turn: "10월 전반", nameKo: "개선문상", nameShort: "개선문상", grade: "G1", field: "잔디", distType: "중거리", stadium: "롱샹", distM: "2400m", dir: "우" },
+{ year: 2, turn: "1월 전반", nameKo: "닛케이 신춘배", nameShort: "닛케이 신춘배", grade: "G2", field: "잔디", distType: "중거리", stadium: "교토", distM: "2400m", dir: "우(외주로)" },
+{ year: 2, turn: "1월 후반", nameKo: "토카이 스테이크스", nameShort: "토카이 S", grade: "G2", field: "더트", distType: "마일", stadium: "츄쿄", distM: "1800m", dir: "좌" },
+{ year: 2, turn: "1월 후반", nameKo: "아메리카 JCC", nameShort: "아메리카 JCC", grade: "G2", field: "잔디", distType: "중거리", stadium: "나카야마", distM: "2200m", dir: "우(외주로)" },
+{ year: 2, turn: "2월 전반", nameKo: "교토  기념", nameShort: "교토  기념", grade: "G2", field: "잔디", distType: "중거리", stadium: "교토", distM: "2200m", dir: "우(외주로)" },
+{ year: 2, turn: "2월 후반", nameKo: "나카야마 기념", nameShort: "나카야마 기념", grade: "G2", field: "잔디", distType: "마일", stadium: "나카야마", distM: "1800m", dir: "우(내주로)" },
+{ year: 1, turn: "3월 전반", nameKo: "튤립상", nameShort: "튤립상", grade: "G2", field: "잔디", distType: "마일", stadium: "한신", distM: "1600m", dir: "우(외주로)" },
+{ year: 1, turn: "3월 전반", nameKo: "야요이상", nameShort: "야요이상", grade: "G2", field: "잔디", distType: "중거리", stadium: "나카야마", distM: "2000m", dir: "우(내주로)" },
+{ year: 2, turn: "3월 전반", nameKo: "킨코상", nameShort: "킨코상", grade: "G2", field: "잔디", distType: "중거리", stadium: "츄쿄", distM: "2000m", dir: "좌" },
+{ year: 1, turn: "3월 전반", nameKo: "필리스 레뷰", nameShort: "필리스 레뷰", grade: "G2", field: "잔디", distType: "단거리", stadium: "한신", distM: "1400m", dir: "우(내주로)" },
+{ year: 2, turn: "3월 후반", nameKo: "한신 대상전", nameShort: "한신 대상전", grade: "G2", field: "잔디", distType: "장거리", stadium: "한신", distM: "3000m", dir: "우(내주로)" },
+{ year: 1, turn: "3월 후반", nameKo: "스프링 스테이크스", nameShort: "스프링 S", grade: "G2", field: "잔디", distType: "마일", stadium: "나카야마", distM: "1800m", dir: "우(내주로)" },
+{ year: 2, turn: "3월 후반", nameKo: "닛케이상", nameShort: "닛케이상", grade: "G2", field: "잔디", distType: "장거리", stadium: "나카야마", distM: "2500m", dir: "우(내주로)" },
+{ year: 2, turn: "4월 전반", nameKo: "한신 우마무스메 스테이크스", nameShort: "한신 우마무스메 S", grade: "G2", field: "잔디", distType: "마일", stadium: "한신", distM: "1600m", dir: "우(외주로)" },
+{ year: 1, turn: "4월 전반", nameKo: "뉴질랜드 트로피", nameShort: "뉴질랜드 T", grade: "G2", field: "잔디", distType: "마일", stadium: "나카야마", distM: "1600m", dir: "우(외주로)" },
+{ year: 2, turn: "4월 후반", nameKo: "마일러스컵", nameShort: "마일러스컵", grade: "G2", field: "잔디", distType: "마일", stadium: "교토", distM: "1600m", dir: "우(외주로)" },
+{ year: 1, turn: "4월 후반", nameKo: "플로라 스테이크스", nameShort: "플로라 S", grade: "G2", field: "잔디", distType: "중거리", stadium: "도쿄", distM: "2000m", dir: "좌" },
+{ year: 1, turn: "4월 후반", nameKo: "청엽상", nameShort: "청엽상", grade: "G2", field: "잔디", distType: "중거리", stadium: "도쿄", distM: "2400m", dir: "좌" },
+{ year: 1, turn: "5월 전반", nameKo: "교토 신문배", nameShort: "교토 신문배", grade: "G2", field: "잔디", distType: "중거리", stadium: "교토", distM: "2200m", dir: "우(외주로)" },
+{ year: 2, turn: "5월 전반", nameKo: "케이오배 스프링컵", nameShort: "케이오배 스프링컵", grade: "G2", field: "잔디", distType: "단거리", stadium: "도쿄", distM: "1400m", dir: "좌" },
+{ year: 2, turn: "5월 후반", nameKo: "메구로 기념", nameShort: "메구로 기념", grade: "G2", field: "잔디", distType: "장거리", stadium: "도쿄", distM: "2500m", dir: "좌" },
+{ year: 1, turn: "8월 후반", nameKo: "삿포로 기념", nameShort: "삿포로 기념", grade: "G2", field: "잔디", distType: "중거리", stadium: "삿포로", distM: "2000m", dir: "우" },
+{ year: 2, turn: "8월 후반", nameKo: "삿포로 기념", nameShort: "삿포로 기념", grade: "G2", field: "잔디", distType: "중거리", stadium: "삿포로", distM: "2000m", dir: "우" },
+{ year: 1, turn: "9월 전반", nameKo: "센토 스테이크스", nameShort: "센토 S", grade: "G2", field: "잔디", distType: "단거리", stadium: "한신", distM: "1200m", dir: "우(내주로)" },
+{ year: 2, turn: "9월 전반", nameKo: "센토 스테이크스", nameShort: "센토 S", grade: "G2", field: "잔디", distType: "단거리", stadium: "한신", distM: "1200m", dir: "우(내주로)" },
+{ year: 1, turn: "9월 전반", nameKo: "로즈 스테이크스", nameShort: "로즈 S", grade: "G2", field: "잔디", distType: "마일", stadium: "한신", distM: "1800m", dir: "우(외주로)" },
+{ year: 1, turn: "9월 후반", nameKo: "세인트 라이트 기념", nameShort: "세인트 라이트 기념", grade: "G2", field: "잔디", distType: "중거리", stadium: "나카야마", distM: "2200m", dir: "우(외주로)" },
+{ year: 1, turn: "9월 후반", nameKo: "고베 신문배", nameShort: "고베 신문배", grade: "G2", field: "잔디", distType: "중거리", stadium: "한신", distM: "2400m", dir: "우(외주로)" },
+{ year: 1, turn: "9월 후반", nameKo: "올 커머스", nameShort: "올 커머스", grade: "G2", field: "잔디", distType: "중거리", stadium: "나카야마", distM: "2200m", dir: "우(외주로)" },
+{ year: 2, turn: "9월 후반", nameKo: "올 커머스", nameShort: "올 커머스", grade: "G2", field: "잔디", distType: "중거리", stadium: "나카야마", distM: "2200m", dir: "우(외주로)" },
+{ year: 1, turn: "10월 전반", nameKo: "마이니치 왕관", nameShort: "마이니치 왕관", grade: "G2", field: "잔디", distType: "마일", stadium: "도쿄", distM: "1800m", dir: "좌" },
+{ year: 2, turn: "10월 전반", nameKo: "마이니치 왕관", nameShort: "마이니치 왕관", grade: "G2", field: "잔디", distType: "마일", stadium: "도쿄", distM: "1800m", dir: "좌" },
+{ year: 1, turn: "10월 전반", nameKo: "교토 대상전", nameShort: "교토 대상전", grade: "G2", field: "잔디", distType: "중거리", stadium: "교토", distM: "2400m", dir: "우(외주로)" },
+{ year: 2, turn: "10월 전반", nameKo: "교토 대상전", nameShort: "교토 대상전", grade: "G2", field: "잔디", distType: "중거리", stadium: "교토", distM: "2400m", dir: "우(외주로)" },
+{ year: 1, turn: "10월 전반", nameKo: "후츄 우마무스메 스테이크스", nameShort: "후츄 우마무스메 S", grade: "G2", field: "잔디", distType: "마일", stadium: "도쿄", distM: "1800m", dir: "좌" },
+{ year: 2, turn: "10월 전반", nameKo: "후츄 우마무스메 스테이크스", nameShort: "후츄 우마무스메 S", grade: "G2", field: "잔디", distType: "마일", stadium: "도쿄", distM: "1800m", dir: "좌" },
+{ year: 1, turn: "10월 후반", nameKo: "후지 스테이크스", nameShort: "후지 S", grade: "G2", field: "잔디", distType: "마일", stadium: "도쿄", distM: "1600m", dir: "좌" },
+{ year: 2, turn: "10월 후반", nameKo: "후지 스테이크스", nameShort: "후지 S", grade: "G2", field: "잔디", distType: "마일", stadium: "도쿄", distM: "1600m", dir: "좌" },
+{ year: 1, turn: "10월 후반", nameKo: "스완 스테이크스", nameShort: "스완 S", grade: "G2", field: "잔디", distType: "단거리", stadium: "교토", distM: "1400m", dir: "우(외주로)" },
+{ year: 2, turn: "10월 후반", nameKo: "스완 스테이크스", nameShort: "스완 S", grade: "G2", field: "잔디", distType: "단거리", stadium: "교토", distM: "1400m", dir: "우(외주로)" },
+{ year: 0, turn: "11월 전반", nameKo: "케이오배 주니어 스테이크스", nameShort: "케이오배 주니어 S", grade: "G2", field: "잔디", distType: "단거리", stadium: "도쿄", distM: "1400m", dir: "좌" },
+{ year: 1, turn: "11월 전반", nameKo: "아르헨티나 공화국배", nameShort: "아르헨티나 공화국배", grade: "G2", field: "잔디", distType: "장거리", stadium: "도쿄", distM: "2500m", dir: "좌" },
+{ year: 2, turn: "11월 전반", nameKo: "아르헨티나 공화국배", nameShort: "아르헨티나 공화국배", grade: "G2", field: "잔디", distType: "장거리", stadium: "도쿄", distM: "2500m", dir: "좌" },
+{ year: 0, turn: "11월 전반", nameKo: "데일리배 주니어 스테이크스", nameShort: "데일리배 주니어 S", grade: "G2", field: "잔디", distType: "마일", stadium: "교토", distM: "1600m", dir: "우(외주로)" },
+{ year: 1, turn: "12월 전반", nameKo: "스테이어스 스테이크스", nameShort: "스테이어스 S", grade: "G2", field: "잔디", distType: "장거리", stadium: "나카야마", distM: "3600m", dir: "우(내주로)" },
+{ year: 2, turn: "12월 전반", nameKo: "스테이어스 스테이크스", nameShort: "스테이어스 S", grade: "G2", field: "잔디", distType: "장거리", stadium: "나카야마", distM: "3600m", dir: "우(내주로)" },
+{ year: 1, turn: "12월 후반", nameKo: "한신컵", nameShort: "한신컵", grade: "G2", field: "잔디", distType: "단거리", stadium: "한신", distM: "1400m", dir: "우(내주로)" },
+{ year: 2, turn: "12월 후반", nameKo: "한신컵", nameShort: "한신컵", grade: "G2", field: "잔디", distType: "단거리", stadium: "한신", distM: "1400m", dir: "우(내주로)" },
+{ year: 1, turn: "10월 전반", nameKo: "레이디스 프렐류드", nameShort: "레이디스 프렐류드", grade: "G2", field: "더트", distType: "마일", stadium: "오이", distM: "1800m", dir: "우" },
+{ year: 2, turn: "10월 전반", nameKo: "레이디스 프렐류드", nameShort: "레이디스 프렐류드", grade: "G2", field: "더트", distType: "마일", stadium: "오이", distM: "1800m", dir: "우" },
+{ year: 1, turn: "10월 전반", nameKo: "도쿄배", nameShort: "도쿄배", grade: "G2", field: "더트", distType: "단거리", stadium: "오이", distM: "1200m", dir: "우" },
+{ year: 2, turn: "10월 전반", nameKo: "도쿄배", nameShort: "도쿄배", grade: "G2", field: "더트", distType: "단거리", stadium: "오이", distM: "1200m", dir: "우" },
+{ year: 2, turn: "3월 전반", nameKo: "엠프리스배", nameShort: "엠프리스배", grade: "G2", field: "더트", distType: "중거리", stadium: "가와사키", distM: "2100m", dir: "좌" },
+{ year: 1, turn: "6월 전반", nameKo: "간토 오크스", nameShort: "간토 오크스", grade: "G2", field: "더트", distType: "중거리", stadium: "가와사키", distM: "2100m", dir: "좌" },
+{ year: 2, turn: "3월 후반", nameKo: "다이올라이트 기념", nameShort: "다이올라이트 기념", grade: "G2", field: "더트", distType: "중거리", stadium: "후나바시", distM: "2400m", dir: "좌" },
+{ year: 2, turn: "9월 후반", nameKo: "산다화 TV배", nameShort: "산다화 TV배", grade: "G2", field: "더트", distType: "마일", stadium: "후나바시", distM: "1800m", dir: "좌" },
+{ year: 1, turn: "9월 후반", nameKo: "산다화 TV배", nameShort: "산다화 TV배", grade: "G2", field: "더트", distType: "마일", stadium: "후나바시", distM: "1800m", dir: "좌" },
+{ year: 1, turn: "9월 전반", nameKo: "니엘상", nameShort: "니엘상", grade: "G2", field: "잔디", distType: "중거리", stadium: "롱샹", distM: "2400m", dir: "우" },
+{ year: 2, turn: "9월 전반", nameKo: "푸아상", nameShort: "푸아상", grade: "G2", field: "잔디", distType: "중거리", stadium: "롱샹", distM: "2400m", dir: "우" },
+{ year: 2, turn: "1월 전반", nameKo: "교토 금배", nameShort: "교토 금배", grade: "G3", field: "잔디", distType: "마일", stadium: "교토", distM: "1600m", dir: "우(외주로)" },
+{ year: 2, turn: "1월 전반", nameKo: "나카야마 금배", nameShort: "나카야마 금배", grade: "G3", field: "잔디", distType: "중거리", stadium: "나카야마", distM: "2000m", dir: "우(내주로)" },
+{ year: 1, turn: "1월 전반", nameKo: "신잔 기념", nameShort: "신잔 기념", grade: "G3", field: "잔디", distType: "마일", stadium: "교토", distM: "1600m", dir: "우(외주로)" },
+{ year: 1, turn: "1월 전반", nameKo: "페어리 스테이크스", nameShort: "페어리 S", grade: "G3", field: "잔디", distType: "마일", stadium: "나카야마", distM: "1600m", dir: "우(외주로)" },
+{ year: 2, turn: "1월 전반", nameKo: "아이치배", nameShort: "아이치배", grade: "G3", field: "잔디", distType: "중거리", stadium: "츄쿄", distM: "2000m", dir: "좌" },
+{ year: 1, turn: "1월 전반", nameKo: "케이세이배", nameShort: "케이세이배", grade: "G3", field: "잔디", distType: "중거리", stadium: "나카야마", distM: "2000m", dir: "우(내주로)" },
+{ year: 2, turn: "1월 후반", nameKo: "실크로드 스테이크스", nameShort: "실크로드 S", grade: "G3", field: "잔디", distType: "단거리", stadium: "교토", distM: "1200m", dir: "우(내주로)" },
+{ year: 2, turn: "1월 후반", nameKo: "네기시 스테이크스", nameShort: "네기시 S", grade: "G3", field: "더트", distType: "단거리", stadium: "도쿄", distM: "1400m", dir: "좌" },
+{ year: 1, turn: "2월 전반", nameKo: "키사라기상", nameShort: "키사라기상", grade: "G3", field: "잔디", distType: "마일", stadium: "교토", distM: "1800m", dir: "우(외주로)" },
+{ year: 2, turn: "2월 전반", nameKo: "도쿄 신문배", nameShort: "도쿄 신문배", grade: "G3", field: "잔디", distType: "마일", stadium: "도쿄", distM: "1600m", dir: "좌" },
+{ year: 1, turn: "2월 전반", nameKo: "퀸컵", nameShort: "퀸컵", grade: "G3", field: "잔디", distType: "마일", stadium: "도쿄", distM: "1600m", dir: "좌" },
+{ year: 1, turn: "2월 전반", nameKo: "쿄도통신배", nameShort: "쿄도통신배", grade: "G3", field: "잔디", distType: "마일", stadium: "도쿄", distM: "1800m", dir: "좌" },
+{ year: 2, turn: "2월 후반", nameKo: "교토 우마무스메 스테이크스", nameShort: "교토 우마무스메 S", grade: "G3", field: "잔디", distType: "단거리", stadium: "교토", distM: "1400m", dir: "우(외주로)" },
+{ year: 2, turn: "2월 후반", nameKo: "다이아몬드 스테이크스", nameShort: "다이아몬드 S", grade: "G3", field: "잔디", distType: "장거리", stadium: "도쿄", distM: "3400m", dir: "좌" },
+{ year: 2, turn: "2월 후반", nameKo: "코쿠라 대상전", nameShort: "코쿠라 대상전", grade: "G3", field: "잔디", distType: "마일", stadium: "코쿠라", distM: "1800m", dir: "우" },
+{ year: 1, turn: "4월 전반", nameKo: "알링턴컵", nameShort: "알링턴컵", grade: "G3", field: "잔디", distType: "마일", stadium: "한신", distM: "1600m", dir: "우(외주로)" },
+{ year: 2, turn: "2월 후반", nameKo: "한큐배", nameShort: "한큐배", grade: "G3", field: "잔디", distType: "단거리", stadium: "한신", distM: "1400m", dir: "우(내주로)" },
+{ year: 2, turn: "3월 전반", nameKo: "오션 스테이크스", nameShort: "오션 S", grade: "G3", field: "잔디", distType: "단거리", stadium: "나카야마", distM: "1200m", dir: "우(외주로)" },
+{ year: 2, turn: "3월 전반", nameKo: "나카야마 우마무스메 스테이크스", nameShort: "나카야마 우마무스메 S", grade: "G3", field: "잔디", distType: "마일", stadium: "나카야마", distM: "1800m", dir: "우(내주로)" },
+{ year: 1, turn: "3월 후반", nameKo: "팔콘 스테이크스", nameShort: "팔콘 S", grade: "G3", field: "잔디", distType: "단거리", stadium: "츄쿄", distM: "1400m", dir: "좌" },
+{ year: 1, turn: "3월 후반", nameKo: "플라워컵", nameShort: "플라워컵", grade: "G3", field: "잔디", distType: "마일", stadium: "나카야마", distM: "1800m", dir: "우(내주로)" },
+{ year: 1, turn: "3월 후반", nameKo: "마이니치배", nameShort: "마이니치배", grade: "G3", field: "잔디", distType: "마일", stadium: "한신", distM: "1800m", dir: "우(외주로)" },
+{ year: 2, turn: "3월 후반", nameKo: "마치 스테이크스", nameShort: "마치 S", grade: "G3", field: "더트", distType: "마일", stadium: "나카야마", distM: "1800m", dir: "우" },
+{ year: 2, turn: "4월 전반", nameKo: "더비 경 챌린지 트로피", nameShort: "더비 경 CT", grade: "G3", field: "잔디", distType: "마일", stadium: "나카야마", distM: "1600m", dir: "우(외주로)" },
+{ year: 2, turn: "4월 전반", nameKo: "안타레스 스테이크스", nameShort: "안타레스 S", grade: "G3", field: "더트", distType: "마일", stadium: "한신", distM: "1800m", dir: "우" },
+{ year: 2, turn: "4월 후반", nameKo: "후쿠시마 우마무스메 스테이크스", nameShort: "후쿠시마 우마무스메 S", grade: "G3", field: "잔디", distType: "마일", stadium: "후쿠시마", distM: "1800m", dir: "우" },
+{ year: 2, turn: "5월 전반", nameKo: "니이가타 대상전", nameShort: "니이가타 대상전", grade: "G3", field: "잔디", distType: "중거리", stadium: "니이가타", distM: "2000m", dir: "좌(외주로)" },
+{ year: 2, turn: "5월 후반", nameKo: "헤이안 스테이크스", nameShort: "헤이안 S", grade: "G3", field: "더트", distType: "중거리", stadium: "교토", distM: "1900m", dir: "우" },
+{ year: 1, turn: "5월 후반", nameKo: "접시꽃 스테이크스", nameShort: "접시꽃 S", grade: "G3", field: "잔디", distType: "단거리", stadium: "교토", distM: "1200m", dir: "우(내주로)" },
+{ year: 1, turn: "6월 전반", nameKo: "나루오 기념", nameShort: "나루오 기념", grade: "G3", field: "잔디", distType: "중거리", stadium: "한신", distM: "2000m", dir: "우(내주로)" },
+{ year: 2, turn: "6월 전반", nameKo: "나루오 기념", nameShort: "나루오 기념", grade: "G3", field: "잔디", distType: "중거리", stadium: "한신", distM: "2000m", dir: "우(내주로)" },
+{ year: 1, turn: "6월 전반", nameKo: "머메이드 스테이크스", nameShort: "머메이드 S", grade: "G3", field: "잔디", distType: "중거리", stadium: "한신", distM: "2000m", dir: "우(내주로)" },
+{ year: 2, turn: "6월 전반", nameKo: "머메이드 스테이크스", nameShort: "머메이드 S", grade: "G3", field: "잔디", distType: "중거리", stadium: "한신", distM: "2000m", dir: "우(내주로)" },
+{ year: 1, turn: "6월 전반", nameKo: "엡섬컵", nameShort: "엡섬컵", grade: "G3", field: "잔디", distType: "마일", stadium: "도쿄", distM: "1800m", dir: "좌" },
+{ year: 2, turn: "6월 전반", nameKo: "엡섬컵", nameShort: "엡섬컵", grade: "G3", field: "잔디", distType: "마일", stadium: "도쿄", distM: "1800m", dir: "좌" },
+{ year: 1, turn: "6월 후반", nameKo: "유니콘 스테이크스", nameShort: "유니콘 S", grade: "G3", field: "더트", distType: "마일", stadium: "도쿄", distM: "1600m", dir: "좌" },
+{ year: 1, turn: "6월 후반", nameKo: "하코다테 스프린트 스테이크스", nameShort: "하코다테 스프린트 S", grade: "G3", field: "잔디", distType: "단거리", stadium: "하코다테", distM: "1200m", dir: "우" },
+{ year: 2, turn: "6월 후반", nameKo: "하코다테 스프린트 스테이크스", nameShort: "하코다테 스프린트 S", grade: "G3", field: "잔디", distType: "단거리", stadium: "하코다테", distM: "1200m", dir: "우" },
+{ year: 1, turn: "7월 전반", nameKo: "CBC상", nameShort: "CBC상", grade: "G3", field: "잔디", distType: "단거리", stadium: "츄쿄", distM: "1200m", dir: "좌" },
+{ year: 2, turn: "7월 전반", nameKo: "CBC상", nameShort: "CBC상", grade: "G3", field: "잔디", distType: "단거리", stadium: "츄쿄", distM: "1200m", dir: "좌" },
+{ year: 1, turn: "7월 전반", nameKo: "라디오 NIKKEI상", nameShort: "라디오 NIKKEI상", grade: "G3", field: "잔디", distType: "마일", stadium: "후쿠시마", distM: "1800m", dir: "우" },
+{ year: 1, turn: "7월 전반", nameKo: "프로시온 스테이크스", nameShort: "프로시온 S", grade: "G3", field: "더트", distType: "단거리", stadium: "츄쿄", distM: "1400m", dir: "좌" },
+{ year: 2, turn: "7월 전반", nameKo: "프로시온 스테이크스", nameShort: "프로시온 S", grade: "G3", field: "더트", distType: "단거리", stadium: "츄쿄", distM: "1400m", dir: "좌" },
+{ year: 1, turn: "7월 전반", nameKo: "칠석상", nameShort: "칠석상", grade: "G3", field: "잔디", distType: "중거리", stadium: "후쿠시마", distM: "2000m", dir: "우" },
+{ year: 2, turn: "7월 전반", nameKo: "칠석상", nameShort: "칠석상", grade: "G3", field: "잔디", distType: "중거리", stadium: "후쿠시마", distM: "2000m", dir: "우" },
+{ year: 1, turn: "7월 전반", nameKo: "하코다테 기념", nameShort: "하코다테 기념", grade: "G3", field: "잔디", distType: "중거리", stadium: "하코다테", distM: "2000m", dir: "우" },
+{ year: 2, turn: "7월 전반", nameKo: "하코다테 기념", nameShort: "하코다테 기념", grade: "G3", field: "잔디", distType: "중거리", stadium: "하코다테", distM: "2000m", dir: "우" },
+{ year: 1, turn: "7월 후반", nameKo: "츄쿄 기념", nameShort: "츄쿄 기념", grade: "G3", field: "잔디", distType: "마일", stadium: "츄쿄", distM: "1600m", dir: "좌" },
+{ year: 2, turn: "7월 후반", nameKo: "츄쿄 기념", nameShort: "츄쿄 기념", grade: "G3", field: "잔디", distType: "마일", stadium: "츄쿄", distM: "1600m", dir: "좌" },
+{ year: 0, turn: "7월 후반", nameKo: "하코다테 주니어 스테이크스", nameShort: "하코다테 주니어 S", grade: "G3", field: "잔디", distType: "단거리", stadium: "하코다테", distM: "1200m", dir: "우" },
+{ year: 1, turn: "7월 후반", nameKo: "이비스 서머 대시", nameShort: "이비스 SD", grade: "G3", field: "잔디", distType: "단거리", stadium: "니이가타", distM: "1000m", dir: "직선" },
+{ year: 2, turn: "7월 후반", nameKo: "이비스 서머 대시", nameShort: "이비스 SD", grade: "G3", field: "잔디", distType: "단거리", stadium: "니이가타", distM: "1000m", dir: "직선" },
+{ year: 1, turn: "7월 후반", nameKo: "퀸 스테이크스", nameShort: "퀸 S", grade: "G3", field: "잔디", distType: "마일", stadium: "삿포로", distM: "1800m", dir: "우" },
+{ year: 2, turn: "7월 후반", nameKo: "퀸 스테이크스", nameShort: "퀸 S", grade: "G3", field: "잔디", distType: "마일", stadium: "삿포로", distM: "1800m", dir: "우" },
+{ year: 1, turn: "8월 전반", nameKo: "코쿠라 기념", nameShort: "코쿠라 기념", grade: "G3", field: "잔디", distType: "중거리", stadium: "코쿠라", distM: "2000m", dir: "우" },
+{ year: 2, turn: "8월 전반", nameKo: "코쿠라 기념", nameShort: "코쿠라 기념", grade: "G3", field: "잔디", distType: "중거리", stadium: "코쿠라", distM: "2000m", dir: "우" },
+{ year: 1, turn: "8월 전반", nameKo: "레오파드 스테이크스", nameShort: "레오파드 S", grade: "G3", field: "더트", distType: "마일", stadium: "니이가타", distM: "1800m", dir: "좌" },
+{ year: 1, turn: "8월 전반", nameKo: "세키야 기념", nameShort: "세키야 기념", grade: "G3", field: "잔디", distType: "마일", stadium: "니이가타", distM: "1600m", dir: "좌(외주로)" },
+{ year: 2, turn: "8월 전반", nameKo: "세키야 기념", nameShort: "세키야 기념", grade: "G3", field: "잔디", distType: "마일", stadium: "니이가타", distM: "1600m", dir: "좌(외주로)" },
+{ year: 1, turn: "8월 전반", nameKo: "엘름 스테이크스", nameShort: "엘름 S", grade: "G3", field: "더트", distType: "마일", stadium: "삿포로", distM: "1700m", dir: "우" },
+{ year: 2, turn: "8월 전반", nameKo: "엘름 스테이크스", nameShort: "엘름 S", grade: "G3", field: "더트", distType: "마일", stadium: "삿포로", distM: "1700m", dir: "우" },
+{ year: 1, turn: "8월 후반", nameKo: "키타큐슈 기념", nameShort: "키타큐슈 기념", grade: "G3", field: "잔디", distType: "단거리", stadium: "코쿠라", distM: "1200m", dir: "우" },
+{ year: 2, turn: "8월 후반", nameKo: "키타큐슈 기념", nameShort: "키타큐슈 기념", grade: "G3", field: "잔디", distType: "단거리", stadium: "코쿠라", distM: "1200m", dir: "우" },
+{ year: 0, turn: "8월 후반", nameKo: "니이가타 주니어 스테이크스", nameShort: "니이가타 주니어 S", grade: "G3", field: "잔디", distType: "마일", stadium: "니이가타", distM: "1600m", dir: "좌(외주로)" },
+{ year: 1, turn: "8월 후반", nameKo: "킨랜드컵", nameShort: "킨랜드컵", grade: "G3", field: "잔디", distType: "단거리", stadium: "삿포로", distM: "1200m", dir: "우" },
+{ year: 2, turn: "8월 후반", nameKo: "킨랜드컵", nameShort: "킨랜드컵", grade: "G3", field: "잔디", distType: "단거리", stadium: "삿포로", distM: "1200m", dir: "우" },
+{ year: 0, turn: "9월 전반", nameKo: "삿포로 주니어 스테이크스", nameShort: "삿포로 주니어 S", grade: "G3", field: "잔디", distType: "마일", stadium: "삿포로", distM: "1800m", dir: "우" },
+{ year: 0, turn: "9월 전반", nameKo: "코쿠라 주니어 스테이크스", nameShort: "코쿠라 주니어 S", grade: "G3", field: "잔디", distType: "단거리", stadium: "코쿠라", distM: "1200m", dir: "우" },
+{ year: 1, turn: "9월 전반", nameKo: "니이가타 기념", nameShort: "니이가타 기념", grade: "G3", field: "잔디", distType: "중거리", stadium: "니이가타", distM: "2000m", dir: "좌(외주로)" },
+{ year: 2, turn: "9월 전반", nameKo: "니이가타 기념", nameShort: "니이가타 기념", grade: "G3", field: "잔디", distType: "중거리", stadium: "니이가타", distM: "2000m", dir: "좌(외주로)" },
+{ year: 1, turn: "9월 전반", nameKo: "개미취 스테이크스", nameShort: "개미취 S", grade: "G3", field: "잔디", distType: "중거리", stadium: "나카야마", distM: "2000m", dir: "우(내주로)" },
+{ year: 1, turn: "9월 전반", nameKo: "케이세이배 오텀 핸디캡", nameShort: "케이세이배 오텀 H", grade: "G3", field: "잔디", distType: "마일", stadium: "나카야마", distM: "1600m", dir: "우(외주로)" },
+{ year: 2, turn: "9월 전반", nameKo: "케이세이배 오텀 핸디캡", nameShort: "케이세이배 오텀 H", grade: "G3", field: "잔디", distType: "마일", stadium: "나카야마", distM: "1600m", dir: "우(외주로)" },
+{ year: 1, turn: "9월 후반", nameKo: "시리우스 스테이크스", nameShort: "시리우스 S", grade: "G3", field: "더트", distType: "중거리", stadium: "한신", distM: "2000m", dir: "우" },
+{ year: 2, turn: "9월 후반", nameKo: "시리우스 스테이크스", nameShort: "시리우스 S", grade: "G3", field: "더트", distType: "중거리", stadium: "한신", distM: "2000m", dir: "우" },
+{ year: 0, turn: "10월 전반", nameKo: "사우디아라비아 로얄컵", nameShort: "사우디 RC", grade: "G3", field: "잔디", distType: "마일", stadium: "도쿄", distM: "1600m", dir: "좌" },
+{ year: 0, turn: "10월 후반", nameKo: "아르테미스 스테이크스", nameShort: "아르테미스 S", grade: "G3", field: "잔디", distType: "마일", stadium: "도쿄", distM: "1600m", dir: "좌" },
+{ year: 0, turn: "11월 전반", nameKo: "판타지 스테이크스", nameShort: "판타지 S", grade: "G3", field: "잔디", distType: "단거리", stadium: "교토", distM: "1400m", dir: "우(외주로)" },
+{ year: 1, turn: "11월 전반", nameKo: "미야코 스테이크스", nameShort: "미야코 S", grade: "G3", field: "더트", distType: "마일", stadium: "교토", distM: "1800m", dir: "우" },
+{ year: 2, turn: "11월 전반", nameKo: "미야코 스테이크스", nameShort: "미야코 S", grade: "G3", field: "더트", distType: "마일", stadium: "교토", distM: "1800m", dir: "우" },
+{ year: 1, turn: "11월 전반", nameKo: "무사시노 스테이크스", nameShort: "무사시노 S", grade: "G3", field: "더트", distType: "마일", stadium: "도쿄", distM: "1600m", dir: "좌" },
+{ year: 2, turn: "11월 전반", nameKo: "무사시노 스테이크스", nameShort: "무사시노 S", grade: "G3", field: "더트", distType: "마일", stadium: "도쿄", distM: "1600m", dir: "좌" },
+{ year: 1, turn: "11월 전반", nameKo: "후쿠시마 기념", nameShort: "후쿠시마 기념", grade: "G3", field: "잔디", distType: "중거리", stadium: "후쿠시마", distM: "2000m", dir: "우" },
+{ year: 2, turn: "11월 전반", nameKo: "후쿠시마 기념", nameShort: "후쿠시마 기념", grade: "G3", field: "잔디", distType: "중거리", stadium: "후쿠시마", distM: "2000m", dir: "우" },
+{ year: 0, turn: "11월 후반", nameKo: "도쿄 스포츠배 주니어 스테이크스", nameShort: "도쿄 스포츠배 주니어 S", grade: "G3", field: "잔디", distType: "마일", stadium: "도쿄", distM: "1800m", dir: "좌" },
+{ year: 0, turn: "11월 후반", nameKo: "교토 주니어 스테이크스", nameShort: "교토 주니어 S", grade: "G3", field: "잔디", distType: "중거리", stadium: "교토", distM: "2000m", dir: "우(내주로)" },
+{ year: 1, turn: "11월 후반", nameKo: "케이한배", nameShort: "케이한배", grade: "G3", field: "잔디", distType: "단거리", stadium: "교토", distM: "1200m", dir: "우(내주로)" },
+{ year: 2, turn: "11월 후반", nameKo: "케이한배", nameShort: "케이한배", grade: "G3", field: "잔디", distType: "단거리", stadium: "교토", distM: "1200m", dir: "우(내주로)" },
+{ year: 1, turn: "12월 전반", nameKo: "챌린지컵", nameShort: "챌린지컵", grade: "G3", field: "잔디", distType: "중거리", stadium: "한신", distM: "2000m", dir: "우(내주로)" },
+{ year: 2, turn: "12월 전반", nameKo: "챌린지컵", nameShort: "챌린지컵", grade: "G3", field: "잔디", distType: "중거리", stadium: "한신", distM: "2000m", dir: "우(내주로)" },
+{ year: 1, turn: "12월 전반", nameKo: "츄니치 신문배", nameShort: "츄니치 신문배", grade: "G3", field: "잔디", distType: "중거리", stadium: "츄쿄", distM: "2000m", dir: "좌" },
+{ year: 2, turn: "12월 전반", nameKo: "츄니치 신문배", nameShort: "츄니치 신문배", grade: "G3", field: "잔디", distType: "중거리", stadium: "츄쿄", distM: "2000m", dir: "좌" },
+{ year: 1, turn: "12월 전반", nameKo: "카펠라 스테이크스", nameShort: "카펠라 S", grade: "G3", field: "더트", distType: "단거리", stadium: "나카야마", distM: "1200m", dir: "우" },
+{ year: 2, turn: "12월 전반", nameKo: "카펠라 스테이크스", nameShort: "카펠라 S", grade: "G3", field: "더트", distType: "단거리", stadium: "나카야마", distM: "1200m", dir: "우" },
+{ year: 1, turn: "12월 전반", nameKo: "터키석 스테이크스", nameShort: "터키석 S", grade: "G3", field: "잔디", distType: "마일", stadium: "나카야마", distM: "1600m", dir: "우(외주로)" },
+{ year: 2, turn: "12월 전반", nameKo: "터키석 스테이크스", nameShort: "터키석 S", grade: "G3", field: "잔디", distType: "마일", stadium: "나카야마", distM: "1600m", dir: "우(외주로)" },
+{ year: 2, turn: "1월 후반", nameKo: "TCK 여왕배", nameShort: "TCK 여왕배", grade: "G3", field: "더트", distType: "마일", stadium: "오이", distM: "1800m", dir: "우" },
+{ year: 2, turn: "4월 후반", nameKo: "도쿄 스프린트", nameShort: "도쿄 스프린트", grade: "G3", field: "더트", distType: "단거리", stadium: "오이", distM: "1200m", dir: "우" },
+{ year: 1, turn: "7월 전반", nameKo: "스파킹 레이디컵", nameShort: "스파킹 레이디컵", grade: "G3", field: "더트", distType: "마일", stadium: "가와사키", distM: "1600m", dir: "좌" },
+{ year: 2, turn: "7월 전반", nameKo: "스파킹 레이디컵", nameShort: "스파킹 레이디컵", grade: "G3", field: "더트", distType: "마일", stadium: "가와사키", distM: "1600m", dir: "좌" },
+{ year: 1, turn: "4월 전반", nameKo: "마린컵", nameShort: "마린컵", grade: "G3", field: "더트", distType: "마일", stadium: "후나바시", distM: "1600m", dir: "좌" },
+{ year: 2, turn: "4월 전반", nameKo: "마린컵", nameShort: "마린컵", grade: "G3", field: "더트", distType: "마일", stadium: "후나바시", distM: "1600m", dir: "좌" },
+{ year: 1, turn: "12월 전반", nameKo: "퀸상", nameShort: "퀸상", grade: "G3", field: "더트", distType: "마일", stadium: "후나바시", distM: "1800m", dir: "좌" },
+{ year: 2, turn: "12월 전반", nameKo: "퀸상", nameShort: "퀸상", grade: "G3", field: "더트", distType: "마일", stadium: "후나바시", distM: "1800m", dir: "좌" },
+{ year: 1, turn: "7월 후반", nameKo: "머큐리컵", nameShort: "머큐리컵", grade: "G3", field: "더트", distType: "중거리", stadium: "모리오카", distM: "2000m", dir: "좌" },
+{ year: 2, turn: "7월 후반", nameKo: "머큐리컵", nameShort: "머큐리컵", grade: "G3", field: "더트", distType: "중거리", stadium: "모리오카", distM: "2000m", dir: "좌" },
+{ year: 1, turn: "8월 후반", nameKo: "클러스터컵", nameShort: "클러스터컵", grade: "G3", field: "더트", distType: "단거리", stadium: "모리오카", distM: "1200m", dir: "좌" },
+{ year: 2, turn: "8월 후반", nameKo: "클러스터컵", nameShort: "클러스터컵", grade: "G3", field: "더트", distType: "단거리", stadium: "모리오카", distM: "1200m", dir: "좌" },
+ ];
+
+    const getUniqueTrophies = () => {
+        const seen = new Set();
+        return allRaces.filter(race => {
+            const duplicate = seen.has(race.nameKo);
+            seen.add(race.nameKo);
+            return !duplicate;
+        });
+    };
+
+    let currentYearIdx = 0, currentActiveTab = 'list';
+
+    function updateStats() {
+        const uniqueTrophies = getUniqueTrophies();
+        const total = uniqueTrophies.length;
+        let done = 0;
+        uniqueTrophies.forEach(t => { if (localStorage.getItem(t.nameKo) === 'true') done++; });
+        const percent = total > 0 ? Math.floor((done / total) * 100) : 0;
+        document.getElementById('totalPercent').innerText = percent;
+        document.getElementById('doneCount').innerText = done;
+        document.getElementById('totalCount').innerText = total;
+    }
+
+    function switchMenu(menu) {
+        currentActiveTab = menu;
+        document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+        document.querySelectorAll('.main-tab-item').forEach(el => el.classList.remove('active'));
+        document.getElementById('yearTabHeader').style.display = (menu === 'trophy' || menu === 'progress') ? 'none' : 'flex';
+        document.getElementById(`menu${menu.charAt(0).toUpperCase() + menu.slice(1)}`).classList.add('active');
+        document.getElementById(`tab${menu.charAt(0).toUpperCase() + menu.slice(1)}`).classList.add('active');
+        refreshCurrentTab();
+    }
+
+    function setYear(idx) {
+        currentYearIdx = idx;
+        document.querySelectorAll('.year-tab').forEach((t, i) => t.classList.toggle('active', i === idx));
+        refreshCurrentTab();
+    }
+
+    function refreshCurrentTab() {
+        updateStats();
+        if(currentActiveTab === 'list') renderList();
+        else if(currentActiveTab === 'status') renderStatus();
+        else if(currentActiveTab === 'trophy') renderTrophyRoom();
+        else if(currentActiveTab === 'progress') renderProgress();
+    }
+
+    function renderList() {
+        const container = document.getElementById('raceContainer'); container.innerHTML = '';
+        const sortedRaces = [...allRaces].sort((a, b) => {
+            if (a.year !== b.year) return a.year - b.year;
+            return turns.indexOf(a.turn) - turns.indexOf(b.turn);
+        });
+        const filtered = sortedRaces.filter(r => r.year === currentYearIdx);
+        let lastTurn = "";
+        filtered.forEach(race => {
+            if (race.turn !== lastTurn) {
+                const div = document.createElement('div'); div.className = 'turn-divider'; div.innerText = race.turn; container.appendChild(div);
+                lastTurn = race.turn;
+            }
+            const isDone = localStorage.getItem(race.nameKo) === 'true';
+            const card = document.createElement('div');
+            card.className = `race-card ${isDone ? 'completed' : ''}`;
+            card.onclick = () => toggleRace(race.nameKo);
+            card.innerHTML = `<div class="grade-badge ${race.grade}">${race.grade}</div><div class="info"><span class="name">${race.nameKo}</span><span class="stadium-detail">${race.stadium} ${race.distM} ${race.dir}</span></div><div class="highlight-group"><div class="highlight-box">${race.field}</div><div class="highlight-box">${race.distType}</div></div>`;
+            container.appendChild(card);
+        });
+    }
+
+    function renderStatus() {
+        const container = document.getElementById('statusGridContainer'); container.innerHTML = '';
+        turns.forEach(turn => {
+            const turnRaces = allRaces.filter(r => r.year === currentYearIdx && r.turn === turn);
+            let statusClass = "none", statusText = "-";
+            if(turnRaces.length > 0) {
+                const allDone = turnRaces.every(r => localStorage.getItem(r.nameKo) === 'true');
+                statusClass = allDone ? "done" : "undone";
+                statusText = allDone ? "완료" : "미완료";
+            }
+            const item = document.createElement('div'); item.className = 'status-item';
+            item.innerHTML = `<div class="status-box ${statusClass}">${statusText}</div><div class="status-label">${turn}</div>`;
+            container.appendChild(item);
+        });
+    }
+
+    function renderProgress() {
+        const container = document.getElementById('progressContainer');
+        container.innerHTML = '';
+        const uniqueTrophies = getUniqueTrophies();
+        const types = [
+            {f: '잔디', d: '단거리'}, {f: '잔디', d: '마일'}, {f: '잔디', d: '중거리'}, {f: '잔디', d: '장거리'},
+            {f: '더트', d: '단거리'}, {f: '더트', d: '마일'}, {f: '더트', d: '중거리'}
+        ];
+
+        types.forEach(type => {
+            const remain = uniqueTrophies.filter(t => t.field === type.f && t.distType === type.d && localStorage.getItem(t.nameKo) !== 'true').length;
+            const item = document.createElement('div');
+            item.className = 'progress-item';
+            
+            const fieldColor = type.f === '잔디' ? 'var(--field-turf)' : 'var(--field-dirt)';
+            const distColor = type.d === '단거리' ? 'var(--dist-1)' : type.d === '마일' ? 'var(--dist-2)' : type.d === '중거리' ? 'var(--dist-3)' : 'var(--dist-4)';
+
+            item.innerHTML = `
+                <div>
+                    남은 <span class="field-tag" style="background:${fieldColor}">${type.f}</span> / 
+                    <span class="dist-tag" style="background:${distColor}">${type.d}</span> 레이스
+                </div>
+                <div class="remain-count">${remain}개</div>
+            `;
+            container.appendChild(item);
+        });
+    }
+
+    function renderTrophyRoom() {
+        const grids = { G1: document.getElementById('g1Grid'), G2: document.getElementById('g2Grid'), G3: document.getElementById('g3Grid') };
+        Object.values(grids).forEach(g => g.innerHTML = '');
+        const counters = { G1: 0, G2: 0, G3: 0 };
+
+        getUniqueTrophies().forEach(t => {
+            const isDone = localStorage.getItem(t.nameKo) === 'true';
+            if (counters[t.grade] > 0 && counters[t.grade] % 15 === 0) {
+                const divider = document.createElement('div'); divider.className = 'trophy-page-divider';
+                grids[t.grade].appendChild(divider);
+            }
+            const item = document.createElement('div');
+            item.className = `trophy-item ${isDone ? 'active' : ''}`;
+            item.onclick = () => toggleRace(t.nameKo);
+            item.innerHTML = `<div class="trophy-icon"></div><div class="trophy-name">${t.nameShort || t.nameKo}</div>`;
+            if(grids[t.grade]) { grids[t.grade].appendChild(item); counters[t.grade]++; }
+        });
+    }
+
+    function toggleRace(name) {
+        const isDone = localStorage.getItem(name) === 'true';
+        localStorage.setItem(name, !isDone);
+        refreshCurrentTab();
+    }
+
+    function resetAllData() {
+        if (confirm("모든 기록을 초기화할까요?")) {
+            localStorage.clear();
+            refreshCurrentTab();
+        }
+    }
+
+    refreshCurrentTab();
+</script>
+</body>
+</html>
