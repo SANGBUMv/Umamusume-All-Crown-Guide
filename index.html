@@ -63,6 +63,21 @@
         .main-tab-item.active { color: var(--uma-green); background-color: #fcfdfa; }
 
         .reset-btn { background: none; color: var(--danger); border: 1px solid var(--danger); padding: 10px 20px; border-radius: 10px; font-size: 0.8rem; font-weight: bold; margin: 30px auto; cursor: pointer; display: block; }
+
+        .illust-container {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    padding: 20px 0;
+    margin-bottom: 20px;
+}
+        .bottom-illust {
+    width: 80%;      
+    max-width: 300px; 
+    height: auto;     
+    border-radius: 15px; 
+}
+
     </style>
 </head>
 <body>
@@ -88,6 +103,9 @@
             <div class="progress-card" id="progressContainer">
                 </div>
             <button class="reset-btn" onclick="resetAllData()">기록 전체 초기화</button>
+            
+            <div class="illust-container">
+        <img src="illust.png" alt="일러스트" class="bottom-illust">
         </div>
     </div>
 
@@ -466,4 +484,5 @@
     refreshCurrentTab();
 </script>
 </body>
+
 </html>
